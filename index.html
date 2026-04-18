@@ -1,746 +1,525 @@
-
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SchoolResult – Student Score Calculator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
- 
-  :root {
-    --ink: #0f1117;
-    --paper: #f9f7f2;
-    --cream: #ede9df;
-    --gold: #c9a84c;
-    --gold-light: #f0d98a;
-    --green: #2a7a4b;
-    --green-light: #d4edda;
-    --red: #c0392b;
-    --red-light: #fde8e6;
-    --border: #d4cfc3;
-    --shadow: rgba(15,17,23,0.08);
-  }
- 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
- 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-  }
- 
-  /* ── HEADER ── */
-  header {
-    background: var(--ink);
-    color: #fff;
-    padding: 28px 40px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border-bottom: 4px solid var(--gold);
-  }
-  header .logo-icon {
-    width: 44px; height: 44px;
-    background: var(--gold);
-    border-radius: 8px;
-    display: grid; place-items: center;
-    font-size: 22px;
-  }
-  header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.7rem;
-    letter-spacing: -0.5px;
-  }
-  header p { font-size: 0.82rem; opacity: 0.55; margin-top: 2px; }
- 
-  /* ── LAYOUT ── */
-  .container {
-    max-width: 860px;
-    margin: 40px auto 80px;
-    padding: 0 20px;
-  }
- 
-  /* ── SECTION CARDS ── */
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 30px 32px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 12px var(--shadow);
-  }
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 22px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--cream);
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    color: var(--ink);
-  }
-  .card-title .icon {
-    width: 28px; height: 28px;
-    background: var(--cream);
-    border-radius: 6px;
-    display: grid; place-items: center;
-    font-size: 14px;
-  }
- 
-  /* ── GRID FORM ── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  .form-grid .full { grid-column: 1 / -1; }
- 
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: #6b6455;
-  }
-  .field input, .field select, .field textarea {
-    padding: 11px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    background: var(--paper);
-    color: var(--ink);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
-    background: #fff;
-  }
-  .field textarea { resize: vertical; min-height: 80px; }
- 
-  /* ── SUBJECTS TABLE ── */
-  .subjects-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.92rem;
-  }
-  .subjects-table th {
-    background: var(--cream);
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #6b6455;
-  }
-  .subjects-table th:first-child { border-radius: 8px 0 0 8px; }
-  .subjects-table th:last-child { border-radius: 0 8px 8px 0; }
- 
-  .subjects-table td { padding: 8px 8px; vertical-align: middle; }
-  .subjects-table tr:not(:last-child) td { border-bottom: 1px solid var(--cream); }
- 
-  .subjects-table input[type="text"],
-  .subjects-table input[type="number"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1.5px solid var(--border);
-    border-radius: 7px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    background: var(--paper);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .subjects-table input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
-    background: #fff;
-  }
- 
-  .grade-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    min-width: 36px;
-    text-align: center;
-  }
-  .grade-A { background: var(--green-light); color: var(--green); }
-  .grade-B { background: #dff0ff; color: #1a6fa0; }
-  .grade-C { background: #fff3d4; color: #9a6200; }
-  .grade-D { background: #fde8e6; color: var(--red); }
-  .grade-F { background: #f5d5d5; color: #8b1a1a; }
-  .grade-empty { background: var(--cream); color: #999; }
- 
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-    letter-spacing: 0.2px;
-  }
-  .btn-ghost {
-    background: var(--cream);
-    color: var(--ink);
-    border: 1.5px solid var(--border);
-  }
-  .btn-ghost:hover { background: #e4dfd4; border-color: #b8b0a2; }
- 
-  .btn-danger {
-    background: var(--red-light);
-    color: var(--red);
-    border: 1.5px solid #f5c6c1;
-  }
-  .btn-danger:hover { background: #fbd5d1; }
- 
-  .btn-primary {
-    background: var(--ink);
-    color: #fff;
-  }
-  .btn-primary:hover { background: #2a2d38; }
- 
-  .btn-gold {
-    background: var(--gold);
-    color: #fff;
-    font-size: 1rem;
-    padding: 13px 28px;
-    border-radius: 10px;
-  }
-  .btn-gold:hover { background: #b8943d; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,168,76,0.35); }
- 
-  .subjects-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-  }
- 
-  /* ── SUMMARY STRIP ── */
-  .summary-strip {
-    background: var(--ink);
-    color: #fff;
-    border-radius: 12px;
-    padding: 20px 28px;
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-  .summary-strip .stat { display: flex; flex-direction: column; gap: 3px; }
-  .summary-strip .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.7px; opacity: 0.5; }
-  .summary-strip .stat-value { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold-light); }
-  .summary-strip .stat-value.pass { color: #7ee8a2; }
-  .summary-strip .stat-value.fail { color: #f9a8a0; }
- 
-  /* ── EXPORT AREA ── */
-  .export-area {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
- 
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 30px; right: 30px;
-    background: var(--ink);
-    color: #fff;
-    padding: 13px 20px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-left: 4px solid var(--gold); }
-  .toast.error { border-left: 4px solid var(--red); }
- 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-grid .full { grid-column: 1; }
-    header { padding: 20px; }
-    header h1 { font-size: 1.35rem; }
-    .card { padding: 20px 18px; }
-    .summary-strip { gap: 20px; padding: 16px 18px; }
-  }
-</style>
-</head>
-<body>
- 
-<header>
-  <div class="logo-icon">🎓</div>
-  <div>
-    <h1>SchoolResult</h1>
-    <p>Student Score Calculator & Report Generator</p>
-  </div>
-</header>
- 
-<div class="container">
- 
-  <!-- SCHOOL INFO -->
-  <div class="card">
-    <div class="card-title"><span class="icon">🏫</span> School & Student Information</div>
-    <div class="form-grid">
-      <div class="field full">
-        <label>School Name</label>
-        <input type="text" id="schoolName" placeholder="e.g. Government Secondary School, Port Harcourt" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchoolResult – Full Report Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">🎓</div>
+      <div>
+        <h1>SchoolResult</h1>
+        <p>Full Student Academic Report Generator</p>
       </div>
-      <div class="field">
-        <label>Student Full Name</label>
-        <input type="text" id="studentName" placeholder="e.g. Adaeze Okonkwo" />
+    </header>
+
+    <div class="container">
+      <!-- STEP 1 -->
+      <div class="step-label">Step 1 — School &amp; Student Details</div>
+      <div class="card">
+        <div class="card-title">
+          <span class="ic">🏫</span>School &amp; Student Information
+        </div>
+        <div class="form-grid">
+          <div class="field full">
+            <label>School Name</label
+            ><input
+              type="text"
+              id="schoolName"
+              placeholder="e.g. Smart Start Private School"
+            />
+          </div>
+          <div class="field full">
+            <label>School Address</label
+            ><input
+              type="text"
+              id="schoolAddress"
+              placeholder="e.g. 20 Gbenga Olatunji Street, Bucknor Lagos"
+            />
+          </div>
+          <div class="field">
+            <label>School Email</label
+            ><input
+              type="text"
+              id="schoolEmail"
+              placeholder="school@example.com"
+            />
+          </div>
+          <div class="field">
+            <label>School Phone</label
+            ><input
+              type="text"
+              id="schoolPhone"
+              placeholder="e.g. 09012293099"
+            />
+          </div>
+        </div>
+        <br />
+        <div class="form-grid">
+          <div class="field">
+            <label>Student Full Name</label
+            ><input
+              type="text"
+              id="studentName"
+              placeholder="e.g. Giovanni Onwuneme"
+            />
+          </div>
+          <div class="field">
+            <label>Student ID</label
+            ><input type="text" id="studentId" placeholder="e.g. SSL1799" />
+          </div>
+          <div class="field">
+            <label>Sex</label>
+            <select id="sex">
+              <option value="">— Select —</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Age</label
+            ><input type="text" id="age" placeholder="e.g. 5" />
+          </div>
+          <div class="field">
+            <label>Class / Form</label
+            ><input
+              type="text"
+              id="className"
+              placeholder="e.g. Nursery 2, JSS3A"
+            />
+          </div>
+          <div class="field">
+            <label>Academic Session</label
+            ><input type="text" id="session" placeholder="e.g. 2025/2026" />
+          </div>
+          <div class="field">
+            <label>Term</label>
+            <select id="term">
+              <option value="">— Select —</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Class Average Score (%)</label
+            ><input
+              type="number"
+              id="classAvg"
+              min="0"
+              max="100"
+              step="0.1"
+              placeholder="e.g. 85.7"
+            />
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label>Class / Form</label>
-        <input type="text" id="className" placeholder="e.g. JSS 2A, SS3" />
+
+      <!-- STEP 2 ATTENDANCE -->
+      <div class="step-label">Step 2 — Attendance</div>
+      <div class="card">
+        <div class="card-title">
+          <span class="ic">📅</span>Attendance Record
+        </div>
+        <div class="attend-grid">
+          <div class="field">
+            <label>Days School Opened</label
+            ><input
+              type="number"
+              id="daysOpened"
+              min="0"
+              placeholder="e.g. 112"
+              oninput="calcAbsent()"
+            />
+          </div>
+          <div class="field">
+            <label>Days Present</label
+            ><input
+              type="number"
+              id="daysPresent"
+              min="0"
+              placeholder="e.g. 110"
+              oninput="calcAbsent()"
+            />
+          </div>
+          <div class="field">
+            <label>Days Absent (auto)</label
+            ><input type="number" id="daysAbsent" min="0" placeholder="auto" />
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label>Academic Session</label>
-        <input type="text" id="session" placeholder="e.g. 2024/2025" />
+
+      <!-- STEP 3 SUBJECTS -->
+      <div class="step-label">
+        Step 3 — Cognitive Domain (Subjects &amp; Scores)
       </div>
-      <div class="field">
-        <label>Term / Year</label>
-        <select id="term">
-          <option value="">— Select Term —</option>
-          <option>First Term</option>
-          <option>Second Term</option>
-          <option>Third Term</option>
-          <option>Full Year</option>
-        </select>
+      <div class="card">
+        <div class="card-title">
+          <span class="ic">📚</span>Subjects, CA &amp; Exam Scores
+        </div>
+        <p class="hint">
+          CA is out of 40 &nbsp;·&nbsp; Exam is out of 60 &nbsp;·&nbsp; Term
+          Total is auto-calculated &nbsp;·&nbsp; Session Average is optional
+          (average across terms)
+        </p>
+        <div class="subjects-wrap">
+          <table class="stbl">
+            <thead>
+              <tr>
+                <th style="width: 28px">#</th>
+                <th style="width: 155px; text-align: left">Subject</th>
+                <th>CA (/40)</th>
+                <th>Exam (/60)</th>
+                <th>Term Total</th>
+                <th>Session Avg</th>
+                <th>Grade</th>
+                <th>Remarks</th>
+                <th style="width: 34px"></th>
+              </tr>
+            </thead>
+            <tbody id="subjectsBody"></tbody>
+          </table>
+        </div>
+        <div class="row-btns">
+          <button class="btn btn-ghost" onclick="addRow()">
+            ＋ Add Subject
+          </button>
+          <button class="btn btn-ghost" onclick="addBulkRows(5)">
+            ＋ Add 5 More
+          </button>
+        </div>
+      </div>
+
+      <!-- LIVE SUMMARY -->
+      <div class="summary-strip">
+        <div class="stat">
+          <span class="sl">Subjects</span><span class="sv" id="sumN">0</span>
+        </div>
+        <div class="stat">
+          <span class="sl">Term Avg</span><span class="sv" id="sumTA">—</span>
+        </div>
+        <div class="stat">
+          <span class="sl">Final Avg</span><span class="sv" id="sumFA">—</span>
+        </div>
+        <div class="stat">
+          <span class="sl">Highest</span
+          ><span class="sv pass" id="sumH">—</span>
+        </div>
+        <div class="stat">
+          <span class="sl">Lowest</span><span class="sv fail" id="sumL">—</span>
+        </div>
+        <div class="stat">
+          <span class="sl">Final Grade</span><span class="sv" id="sumG">—</span>
+        </div>
+      </div>
+
+      <!-- STEP 4 DOMAINS -->
+      <div class="step-label">
+        Step 4 — Affective Domain &amp; Psychomotor Skills
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span class="ic">🌱</span>Behavioural &amp; Skills Assessment
+        </div>
+        <p class="hint">
+          5 = Excellent &nbsp;·&nbsp; 4 = Very Good &nbsp;·&nbsp; 3 = Good
+          &nbsp;·&nbsp; 2 = Average &nbsp;·&nbsp; 1 = Below Average
+          &nbsp;·&nbsp; Leave blank if not assessed
+        </p>
+        <div class="domain-grid">
+          <div class="dom-section">
+            <h3>Affective Domain</h3>
+            <table class="dom-tbl">
+              <tbody id="affTbody">
+                <tr>
+                  <td>Punctuality</td>
+                  <td>
+                    <select id="a0">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Perseverance</td>
+                  <td>
+                    <select id="a1">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Neatness</td>
+                  <td>
+                    <select id="a2">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Honesty</td>
+                  <td>
+                    <select id="a3">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Attentiveness</td>
+                  <td>
+                    <select id="a4">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Politeness</td>
+                  <td>
+                    <select id="a5">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Leadership</td>
+                  <td>
+                    <select id="a6">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Relationship with Students</td>
+                  <td>
+                    <select id="a7">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Emotional Stability</td>
+                  <td>
+                    <select id="a8">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Health</td>
+                  <td>
+                    <select id="a9">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="dom-section">
+            <h3>Psychomotor Skills</h3>
+            <table class="dom-tbl">
+              <tbody id="psyTbody">
+                <tr>
+                  <td>Handling of Tools</td>
+                  <td>
+                    <select id="p0">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Sports and Games</td>
+                  <td>
+                    <select id="p1">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Musical Skills</td>
+                  <td>
+                    <select id="p2">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Drawing &amp; Painting</td>
+                  <td>
+                    <select id="p3">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Verbal Fluency</td>
+                  <td>
+                    <select id="p4">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Writing</td>
+                  <td>
+                    <select id="p5">
+                      <option value="">—</option>
+                      <option>5</option>
+                      <option>4</option>
+                      <option>3</option>
+                      <option>2</option>
+                      <option>1</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 REMARKS -->
+      <div class="step-label">Step 5 — Remarks &amp; Next Term</div>
+      <div class="card">
+        <div class="card-title">
+          <span class="ic">✍️</span>Remarks &amp; Comments
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Class Teacher's Name</label
+            ><input
+              type="text"
+              id="teacherName"
+              placeholder="e.g. Mrs. Adaeze Nwosu"
+            />
+          </div>
+          <div class="field">
+            <label>Head Teacher's Name</label
+            ><input
+              type="text"
+              id="headTeacherName"
+              placeholder="e.g. Mr. Emeka Obi"
+            />
+          </div>
+          <div class="field full">
+            <label>Class Teacher's Remark</label
+            ><textarea
+              id="teacherRemark"
+              placeholder="e.g. Giovanni has done well this term. Keep it up boy..."
+            ></textarea>
+          </div>
+          <div class="field full">
+            <label>Head Teacher's Comment</label
+            ><textarea
+              id="headRemark"
+              placeholder="e.g. An excellent performance keep it up."
+            ></textarea>
+          </div>
+          <div class="field">
+            <label>Next Term Begins</label
+            ><input type="text" id="nextTerm" placeholder="e.g. 4th May 2026" />
+          </div>
+          <div class="field">
+            <label>Promotion Status (optional)</label>
+            <select id="promotion">
+              <option value="">— Select —</option>
+              <option>Promoted to Next Class</option>
+              <option>Repeated – Academic Performance</option>
+              <option>Repeated – Attendance</option>
+              <option>Graduated</option>
+              <option>Pending Review</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-row">
+        <button class="btn btn-ghost" onclick="clearAll()">🗑 Clear All</button>
+        <button class="btn btn-gold" onclick="exportPDF()">
+          ⬇ Export Full PDF Report
+        </button>
       </div>
     </div>
-  </div>
- 
-  <!-- SUBJECTS -->
-  <div class="card">
-    <div class="card-title"><span class="icon">📚</span> Subjects & Scores</div>
- 
-    <table class="subjects-table" id="subjectsTable">
-      <thead>
-        <tr>
-          <th style="width:34px">#</th>
-          <th>Subject Name</th>
-          <th style="width:110px">Score (0–100)</th>
-          <th style="width:70px">Grade</th>
-          <th style="width:44px"></th>
-        </tr>
-      </thead>
-      <tbody id="subjectsBody">
-        <!-- rows injected by JS -->
-      </tbody>
-    </table>
- 
-    <div class="subjects-actions">
-      <button class="btn btn-ghost" onclick="addRow()">＋ Add Subject</button>
-      <button class="btn btn-ghost" onclick="addBulkRows()">＋ Add 5 More</button>
-    </div>
-  </div>
- 
-  <!-- LIVE SUMMARY -->
-  <div class="summary-strip" id="summaryStrip">
-    <div class="stat"><span class="stat-label">Total Subjects</span><span class="stat-value" id="totalSubjects">0</span></div>
-    <div class="stat"><span class="stat-label">Total Score</span><span class="stat-value" id="totalScore">—</span></div>
-    <div class="stat"><span class="stat-label">Average</span><span class="stat-value" id="average">—</span></div>
-    <div class="stat"><span class="stat-label">Highest</span><span class="stat-value pass" id="highest">—</span></div>
-    <div class="stat"><span class="stat-label">Lowest</span><span class="stat-value fail" id="lowest">—</span></div>
-    <div class="stat"><span class="stat-label">Overall Grade</span><span class="stat-value" id="overallGrade">—</span></div>
-  </div>
- 
-  <!-- REMARK & PROMOTION -->
-  <div class="card">
-    <div class="card-title"><span class="icon">✍️</span> Teacher's Remark & Promotion</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Teacher's Name</label>
-        <input type="text" id="teacherName" placeholder="e.g. Mr. Emeka Obi" />
-      </div>
-      <div class="field">
-        <label>Promotion Status</label>
-        <select id="promotion">
-          <option value="">— Select —</option>
-          <option>Promoted to Next Class</option>
-          <option>Repeated – Academic Performance</option>
-          <option>Repeated – Attendance</option>
-          <option>Graduated</option>
-          <option>Pending Review</option>
-        </select>
-      </div>
-      <div class="field full">
-        <label>Teacher's Remark</label>
-        <textarea id="remark" placeholder="e.g. Adaeze has shown great improvement this term. She excels in the sciences and should continue to work hard in the humanities..."></textarea>
-      </div>
-    </div>
-  </div>
- 
-  <!-- EXPORT -->
-  <div class="export-area">
-    <button class="btn btn-ghost" onclick="clearAll()">🗑 Clear All</button>
-    <button class="btn btn-gold" onclick="exportPDF()">⬇ Export as PDF</button>
-  </div>
- 
-</div>
- 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
- 
-<script>
-// ── STATE ──
-let rowCount = 0;
- 
-// ── INIT: add 8 empty rows ──
-window.onload = () => { addBulkRows(); addBulkRows(); };
- 
-// ── ADD ROW ──
-function addRow(subjectName = '', scoreVal = '') {
-  rowCount++;
-  const tbody = document.getElementById('subjectsBody');
-  const tr = document.createElement('tr');
-  tr.id = `row-${rowCount}`;
-  const id = rowCount;
-  tr.innerHTML = `
-    <td style="color:#aaa;font-size:0.8rem;text-align:center">${id}</td>
-    <td><input type="text" placeholder="Subject name" value="${subjectName}" onchange="recalculate()" /></td>
-    <td><input type="number" min="0" max="100" placeholder="0–100" value="${scoreVal}" oninput="recalculate()" /></td>
-    <td id="grade-${id}"><span class="grade-badge grade-empty">—</span></td>
-    <td><button class="btn btn-danger" style="padding:5px 9px;font-size:0.75rem;" onclick="removeRow('row-${id}')">✕</button></td>
-  `;
-  tbody.appendChild(tr);
-  recalculate();
-}
- 
-function addBulkRows() {
-  for (let i = 0; i < 5; i++) addRow();
-}
- 
-function removeRow(id) {
-  document.getElementById(id)?.remove();
-  recalculate();
-}
- 
-// ── GRADE LOGIC ──
-function getGrade(score) {
-  if (score >= 75) return { g: 'A', label: 'A – Distinction' };
-  if (score >= 65) return { g: 'B', label: 'B – Credit' };
-  if (score >= 55) return { g: 'C', label: 'C – Merit' };
-  if (score >= 45) return { g: 'D', label: 'D – Pass' };
-  return { g: 'F', label: 'F – Fail' };
-}
- 
-// ── RECALCULATE ──
-function recalculate() {
-  const rows = document.querySelectorAll('#subjectsBody tr');
-  let scores = [];
-  rows.forEach((tr, i) => {
-    const scoreInput = tr.querySelector('input[type="number"]');
-    const gradeCell = tr.querySelector('[id^="grade-"]');
-    if (!scoreInput || !gradeCell) return;
-    const val = scoreInput.value.trim();
-    if (val === '' || isNaN(val)) {
-      gradeCell.innerHTML = `<span class="grade-badge grade-empty">—</span>`;
-      return;
-    }
-    const score = Math.min(100, Math.max(0, parseFloat(val)));
-    const { g, label } = getGrade(score);
-    gradeCell.innerHTML = `<span class="grade-badge grade-${g}" title="${label}">${g}</span>`;
-    scores.push(score);
-  });
- 
-  const n = scores.length;
-  document.getElementById('totalSubjects').textContent = n;
-  if (n === 0) {
-    ['totalScore','average','highest','lowest','overallGrade'].forEach(id =>
-      document.getElementById(id).textContent = '—'
-    );
-    return;
-  }
-  const total = scores.reduce((a,b) => a+b, 0);
-  const avg = total / n;
-  const high = Math.max(...scores);
-  const low = Math.min(...scores);
-  const { g: og } = getGrade(avg);
- 
-  document.getElementById('totalScore').textContent = total.toFixed(0);
-  document.getElementById('average').textContent = avg.toFixed(1) + '%';
-  document.getElementById('highest').textContent = high;
-  document.getElementById('lowest').textContent = low;
-  document.getElementById('overallGrade').textContent = og;
-}
- 
-// ── CLEAR ALL ──
-function clearAll() {
-  if (!confirm('Clear all data and start fresh?')) return;
-  ['schoolName','studentName','className','session','teacherName','remark'].forEach(id =>
-    document.getElementById(id).value = ''
-  );
-  document.getElementById('term').value = '';
-  document.getElementById('promotion').value = '';
-  document.getElementById('subjectsBody').innerHTML = '';
-  rowCount = 0;
-  addBulkRows(); addBulkRows();
-  showToast('All data cleared.', 'success');
-}
- 
-// ── COLLECT DATA ──
-function collectSubjects() {
-  const rows = document.querySelectorAll('#subjectsBody tr');
-  const data = [];
-  rows.forEach(tr => {
-    const subjectInput = tr.querySelector('input[type="text"]');
-    const scoreInput = tr.querySelector('input[type="number"]');
-    if (!subjectInput || !scoreInput) return;
-    const subject = subjectInput.value.trim();
-    const scoreRaw = scoreInput.value.trim();
-    if (!subject && !scoreRaw) return;
-    const score = scoreRaw !== '' ? Math.min(100, Math.max(0, parseFloat(scoreRaw))) : null;
-    const { g, label } = score !== null ? getGrade(score) : { g: '—', label: '—' };
-    data.push({ subject: subject || '(Unnamed Subject)', score: score !== null ? score : '—', grade: g, label });
-  });
-  return data;
-}
- 
-// ── EXPORT PDF ──
-function exportPDF() {
-  const school = document.getElementById('schoolName').value.trim();
-  const student = document.getElementById('studentName').value.trim();
-  const cls = document.getElementById('className').value.trim();
-  const session = document.getElementById('session').value.trim();
-  const term = document.getElementById('term').value;
-  const teacher = document.getElementById('teacherName').value.trim();
-  const remark = document.getElementById('remark').value.trim();
-  const promotion = document.getElementById('promotion').value;
- 
-  if (!student) { showToast('Please enter the student name first.', 'error'); return; }
- 
-  const subjects = collectSubjects();
-  if (subjects.length === 0) { showToast('Please add at least one subject and score.', 'error'); return; }
- 
-  const numericScores = subjects.filter(s => typeof s.score === 'number').map(s => s.score);
-  const total = numericScores.reduce((a,b) => a+b, 0);
-  const avg = numericScores.length ? (total / numericScores.length) : 0;
-  const high = numericScores.length ? Math.max(...numericScores) : 0;
-  const low = numericScores.length ? Math.min(...numericScores) : 0;
-  const { g: og } = getGrade(avg);
- 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210, PL = 18, PR = 18, CW = W - PL - PR;
- 
-  // ── Background ──
-  doc.setFillColor(15, 17, 23);
-  doc.rect(0, 0, W, 38, 'F');
- 
-  // ── School name ──
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
-  doc.setTextColor(201, 168, 76);
-  doc.text((school || 'School Name Not Provided').toUpperCase(), W/2, 14, { align: 'center' });
- 
-  // ── Title ──
-  doc.setFontSize(10);
-  doc.setTextColor(255,255,255);
-  doc.setFont('helvetica', 'normal');
-  doc.text('STUDENT ACADEMIC RESULT SHEET', W/2, 22, { align: 'center' });
- 
-  // ── Session / Term ──
-  doc.setFontSize(9);
-  doc.setTextColor(200,200,200);
-  const sessionLine = [session, term].filter(Boolean).join('  ·  ');
-  if (sessionLine) doc.text(sessionLine, W/2, 30, { align: 'center' });
- 
-  // ── Gold line ──
-  doc.setDrawColor(201, 168, 76);
-  doc.setLineWidth(0.8);
-  doc.line(PL, 38, W - PR, 38);
- 
-  // ── Student info box ──
-  let y = 46;
-  doc.setFillColor(249,247,242);
-  doc.roundedRect(PL, y, CW, 24, 3, 3, 'F');
-  doc.setDrawColor(212,207,195);
-  doc.setLineWidth(0.4);
-  doc.roundedRect(PL, y, CW, 24, 3, 3, 'S');
- 
-  const col2 = PL + CW/2 + 4;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(107,100,85);
-  doc.text('STUDENT NAME', PL + 6, y + 8);
-  doc.text('CLASS / FORM', col2, y + 8);
-  doc.text('TEACHER', PL + 6, y + 19);
-  doc.text('DATE ISSUED', col2, y + 19);
- 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(15,17,23);
-  doc.text(student || '—', PL + 6, y + 14);
-  doc.text(cls || '—', col2, y + 14);
-  doc.text(teacher || '—', PL + 6, y + 24);
-  doc.text(new Date().toLocaleDateString('en-NG', { day:'2-digit', month:'long', year:'numeric' }), col2, y + 24);
- 
-  // ── SUBJECTS TABLE ──
-  y += 30;
-  doc.autoTable({
-    startY: y,
-    head: [['#', 'Subject', 'Score', 'Grade', 'Remark']],
-    body: subjects.map((s, i) => [
-      i + 1,
-      s.subject,
-      typeof s.score === 'number' ? s.score : '—',
-      s.grade,
-      s.grade === 'A' ? 'Distinction' : s.grade === 'B' ? 'Credit' : s.grade === 'C' ? 'Merit' : s.grade === 'D' ? 'Pass' : s.grade === 'F' ? 'Fail' : '—'
-    ]),
-    margin: { left: PL, right: PR },
-    styles: { font: 'helvetica', fontSize: 9.5, cellPadding: 4.5, textColor: [15,17,23] },
-    headStyles: { fillColor: [15,17,23], textColor: [255,255,255], fontStyle: 'bold', fontSize: 8, halign: 'left' },
-    columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
-      2: { cellWidth: 22, halign: 'center' },
-      3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 30 },
-    },
-    alternateRowStyles: { fillColor: [249,247,242] },
-    didParseCell: function(data) {
-      if (data.section === 'body' && data.column.index === 3) {
-        const g = data.cell.raw;
-        if (g === 'A') { data.cell.styles.textColor = [42,122,75]; data.cell.styles.fontStyle = 'bold'; }
-        else if (g === 'B') { data.cell.styles.textColor = [26,111,160]; data.cell.styles.fontStyle = 'bold'; }
-        else if (g === 'C') { data.cell.styles.textColor = [154,98,0]; data.cell.styles.fontStyle = 'bold'; }
-        else if (g === 'D') { data.cell.styles.textColor = [192,57,43]; }
-        else if (g === 'F') { data.cell.styles.textColor = [139,26,26]; data.cell.styles.fontStyle = 'bold'; }
-      }
-    }
-  });
- 
-  // ── SUMMARY BOX ──
-  y = doc.lastAutoTable.finalY + 10;
- 
-  if (y > 240) { doc.addPage(); y = 20; }
- 
-  doc.setFillColor(15,17,23);
-  doc.roundedRect(PL, y, CW, 26, 3, 3, 'F');
- 
-  const cols = [PL+8, PL+CW*0.22, PL+CW*0.44, PL+CW*0.63, PL+CW*0.82];
-  const labels = ['SUBJECTS', 'TOTAL', 'AVERAGE', 'HIGHEST', 'LOWEST'];
-  const values = [numericScores.length, total.toFixed(0), avg.toFixed(1)+'%', high, low];
- 
-  labels.forEach((lbl, i) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(160,150,130);
-    doc.text(lbl, cols[i], y + 8);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(240,217,138);
-    doc.text(String(values[i]), cols[i], y + 20);
-  });
- 
-  // ── OVERALL GRADE strip ──
-  y += 30;
-  const gradeColors = { A:[42,122,75], B:[26,111,160], C:[154,98,0], D:[192,57,43], F:[139,26,26] };
-  const gc = gradeColors[og] || [99,99,99];
-  doc.setFillColor(...gc, 0.15);
-  doc.setFillColor(gc[0]+180, gc[1]+180, gc[2]+180);
-  doc.roundedRect(PL, y, CW, 14, 3, 3, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...gc);
-  doc.text(`OVERALL GRADE: ${og}  |  ${getGrade(avg).label.toUpperCase()}`, PL + 6, y + 9.5);
- 
-  // ── PROMOTION ──
-  if (promotion) {
-    y += 18;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(107,100,85);
-    doc.text('PROMOTION STATUS', PL, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(15,17,23);
-    doc.text(promotion, PL, y + 7);
-    y += 12;
-  }
- 
-  // ── REMARK ──
-  if (remark) {
-    y += 10;
-    if (y > 250) { doc.addPage(); y = 20; }
- 
-    doc.setFillColor(249,247,242);
-    doc.setDrawColor(212,207,195);
-    doc.setLineWidth(0.4);
- 
-    const remarkLines = doc.splitTextToSize(remark, CW - 12);
-    const remarkH = remarkLines.length * 6 + 18;
-    doc.roundedRect(PL, y, CW, remarkH, 3, 3, 'FD');
- 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(107,100,85);
-    doc.text("TEACHER'S REMARK", PL + 6, y + 8);
- 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15,17,23);
-    doc.text(remarkLines, PL + 6, y + 16);
-    y += remarkH + 14;
-  }
- 
-  // ── SIGNATURE LINE ──
-  if (y > 260) { doc.addPage(); y = 20; }
-  y = Math.max(y, 230);
-  doc.setDrawColor(180,175,165);
-  doc.setLineWidth(0.5);
-  doc.line(PL, y, PL + 60, y);
-  doc.line(W - PR - 60, y, W - PR, y);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(140,130,115);
-  doc.text("Class Teacher's Signature", PL, y + 6);
-  doc.text("Principal's Signature", W - PR - 60, y + 6);
- 
-  // ── FOOTER ──
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(180,175,165);
-  doc.text('Generated By Phocus Technologies · ' + new Date().toLocaleString(), W/2, 290, { align: 'center' });
- 
-  // ── SAVE ──
-  const filename = `${(student || 'Student').replace(/\s+/g,'_')}_Result_${(term || 'Report').replace(/\s+/g,'_')}.pdf`;
-  doc.save(filename);
-  showToast('✅ PDF exported successfully!', 'success');
-}
- 
-// ── TOAST ──
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-</script>
-</body>
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
- 
